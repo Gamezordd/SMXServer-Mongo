@@ -9,6 +9,14 @@ var Post = new Schema({
     likes:{
         type: Number,
         default: 0
+    },
+    poster:{
+        type: String,
+        required: true
+    },
+    liked_by:{
+        type: [String],
+        default: []
     }
 });
 

@@ -17,7 +17,7 @@ var connect = mongoose.connect(url, {useFindAndModify: false});
 
 connect.then((db) => {
   console.log('Connected to Server');
-}, (err) => {console.error(err)});
+}, (err) => {console.error(err);});
 
 var app = express();
 
