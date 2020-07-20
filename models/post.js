@@ -10,7 +10,7 @@ var Post = new Schema({
         type: Number,
         default: 0
     },
-    poster:{
+    author:{
         type: String,
         required: true
     },
