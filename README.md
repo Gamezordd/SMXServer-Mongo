@@ -9,11 +9,11 @@
 ### Exposed endpoints:
 
 #### No authentication necessary:
-  - '/users/sendotp/<phone number>' - GET - To generate and send an OTP to said phone number.
+  - '/users/sendotp/*phone number*' - GET - To generate and send an OTP to said phone number.
   - '/users/login' - POST - To login using username, password and recieved otp in the body.
   - '/users/signup' - POST - Create new account.
   
 #### Authentication required:
   - '/posts' - POST - Create new post.
-  - '/posts/<postId>' - GET - Add a like/dislike if previously liked to the post with id = postId.
+  - '/posts/*postId*' - GET - Add a like/dislike if previously liked to the post with id = postId.
   
