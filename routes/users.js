@@ -53,26 +53,26 @@ var generated_otp = null;
 router.get('/sendotp/:phNum', (req, res) => {
   var success = false;
   generated_otp = parseInt(Math.random() * 1000000);
-  nexmo_instance.message.sendSms('TESTAPP', req.params.phNum, `OTP for logging in is: ${generated_otp}`, {}, (err, res) => {
-    if(err){
-      console.log("error: ", err);
-      success = false;
-    }
-    if(res){
-      console.log("response: ", res);
-      success = true;
-    }
-  });
-  if(success){
+  new Promise((resolve, reject) => {
+    nexmo_instance.message.sendSms('TESTAPP', req.params.phNum, `OTP for logging in is: ${generated_otp}`, {}, (err, res) => {
+      if(err){
+        console.log("error: ", err);
+        reject();
+      }
+      if(res){
+        console.log("response: ", res);
+        resolve();
+      }
+    });
+  }).then(() => {
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
     res.send('OTP has been sent').end();
-  }
-  else{
+  }, () =>{
     res.statusCode = 500;
     res.setHeader('Content-Type', 'application/json');
     res.send('An error has occured').end();
-  }
+  });
 });
 
 router.post('/login', passport.authenticate('local'), (req, res) => {
