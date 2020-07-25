@@ -1,0 +1,66 @@
+import * as functions from "firebase-functions";
+import { Storage } from "@google-cloud/storage";
+const gcs = new Storage();
+import { tmpdir } from "os";
+import { join, dirname } from "path";
+import * as sharp from "sharp";
+import * as fs from "fs-extra";
+
+exports.imageResizefxn = functions.storage
+  .object()
+  .onFinalize(async function (obj) {
+    const sizes = [200, 80, 1000];
+    const bucket = gcs.bucket(obj.bucket);
+    const filePath = obj.name;
+    if (!filePath) {
+      console.error("invalid file_path");
+      return false;
+    }
+    const fileName = filePath.split("/").pop();
+
+    const bucket_dir = dirname(filePath);
+    if (!fileName) {
+      console.error("invalid file_path");
+      return false;
+    }
+    const workingDir = join(tmpdir(), fileName);
+    if (fileName?.includes("resized@") || !obj.contentType?.includes("image")) {
+      console.error("File is not an Image");
+      return false;
+    }
+
+    await fs.ensureDir(workingDir);
+    await bucket.file(filePath ? filePath : "undefined").download({
+      destination: workingDir,
+    });
+
+    const uploadPromises = sizes.map(async function (size) {
+      const new_fileName = `resized@${size}_${fileName}`;
+      const new_filePath = join(workingDir, new_fileName);
+
+      await sharp(workingDir).resize(size, null).toFile(new_filePath);
+
+      return bucket.upload(new_filePath, {
+        destination: join(bucket_dir, `/${size}_files/`, new_fileName),
+      });
+    });
+
+    await Promise.all(uploadPromises);
+    fs.remove(workingDir)
+      .then(() => {
+        return true;
+      })
+      .catch(() => {
+        console.warn("WARNING! Could not remove workingdir");
+        return true;
+      });
+    return false;
+  });
+
+// // Start writing Firebase Functions
+// // https://firebase.google.com/docs/functions/typescript
+//
+// export const helloWorld = functions.https.onRequest((request, response) => {
+//   functions.logger.info("Hello logs!", {structuredData: true});
+//   response.send("Hello from Firebase!");
+// });
